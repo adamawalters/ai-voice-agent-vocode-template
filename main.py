@@ -5,6 +5,8 @@ from config import BASE_URL
 
 from fastapi import FastAPI
 from vocode.streaming.models.telephony import TwilioConfig
+from vocode.streaming.models.agent import GPT4AllAgentConfig
+from vocode.streaming.agent.gpt4all_agent import GPT4AllAgent
 
 # Import both if using ngrok
 # from pyngrok import ngrok
@@ -42,15 +44,15 @@ logger.setLevel(logging.DEBUG)
 CONFIG_MANAGER = config_manager  #RedisConfigManager()
 
 # Activate this if you want to support NGROK
-# if not BASE_URL:
-#     ngrok_auth = os.environ.get("NGROK_AUTH_TOKEN")
-#     if ngrok_auth is not None:
-#         ngrok.set_auth_token(ngrok_auth)
-#     port = sys.argv[sys.argv.index("--port") + 1] if "--port" in sys.argv else 3000
-# 
-#     # Open a ngrok tunnel to the dev server
-#     BASE_URL = ngrok.connect(port).public_url.replace("https://", "")
-#     logger.info('ngrok tunnel "{}" -> "http://127.0.0.1:{}"'.format(BASE_URL, port))
+if not BASE_URL:
+    ngrok_auth = os.environ.get("NGROK_AUTH_TOKEN")
+    if ngrok_auth is not None:
+        ngrok.set_auth_token(ngrok_auth)
+    port = sys.argv[sys.argv.index("--port") + 1] if "--port" in sys.argv else 3000
+
+    # Open a ngrok tunnel to the dev server
+    BASE_URL = ngrok.connect(port).public_url.replace("https://", "")
+    logger.info('ngrok tunnel "{}" -> "http://127.0.0.1:{}"'.format(BASE_URL, port))
 # 
 
 # Only continue of the base URL was set within the environment variable. 
@@ -82,6 +84,7 @@ AGENT_CONFIG = ChatGPTAgentConfig(
   prompt_preamble=get_assistant_instructions(),
   generate_responses=True,
 )
+
 
 # Now we'll give our agent a voice and ears.
 # Our default speech to text engine is DeepGram, so you'll need to set
